@@ -113,20 +113,20 @@ Ctrl+C : 종료
                 
                 # 기본 조종
                 if key == 'w':  
-                    self.left_speed = 175  
-                    self.right_speed = -175
+                    self.left_speed = 255
+                    self.right_speed = -255
                     
                 elif key == 's':  
-                    self.left_speed = -175 
-                    self.right_speed = 175 
+                    self.left_speed = -255
+                    self.right_speed = 255 
                     
                 elif key == 'a':  # 좌회전 
-                    self.left_speed = -175  
-                    self.right_speed = -175
+                    self.left_speed = -255  
+                    self.right_speed = -255
                     
                 elif key == 'd':  # 우회전
-                    self.left_speed = 175   
-                    self.right_speed = 175
+                    self.left_speed = 255 
+                    self.right_speed = 255
                     
                 elif key == ' ':  # 정지
                     self.left_speed = 0
