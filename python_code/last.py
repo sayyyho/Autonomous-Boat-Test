@@ -26,9 +26,9 @@ class HybridBoatController(Node):
         self.emergency_stop = False
 
         # 라이다 회피 파라미터
-        self.danger_threshold = 0.6
-        self.safe_threshold = 0.8
-        self.emergency_threshold = 0.05  # 긴급 정지 거리 추가 
+        self.danger_threshold = 1
+        self.safe_threshold = 1.2
+        self.emergency_threshold = 0.15  # 긴급 정지 거리 추가
         self.front_angle = 45         # 전방 감지 각도 (±45도)
         self.side_angle = 90          # 좌우 감지 각도
         
@@ -284,24 +284,19 @@ r : 리셋    Ctrl+C : 종료
 
     def get_decision_reason(self, front, left, right, command):
         """의사결정 이유를 반환"""
-        # 긴급 정지 체크
         if front < self.emergency_threshold or left < self.emergency_threshold or right < self.emergency_threshold:
             min_dist = min(front, left, right)
             return f"긴급정지 - 장애물 너무 가까움({min_dist:.2f}m < {self.emergency_threshold}m)"
+
+        is_surrounded = (front < self.danger_threshold and left < self.danger_threshold and right < self.danger_threshold)
+        if is_surrounded:
+            return f"사방 막힘(수조 코너) → 좌회전으로 탈출 시도"
             
         if front < self.danger_threshold:
-            if left > right and left > self.danger_threshold:
-                return f"전방위험({front:.2f}m) → 좌측이 더 안전({left:.2f}m > {right:.2f}m)"
-            elif right > left and right > self.danger_threshold:
-                return f"전방위험({front:.2f}m) → 우측이 더 안전({right:.2f}m > {left:.2f}m)"
-            else:
-                return f"전방위험({front:.2f}m) → 좌우 모두 위험, 후진"
+            return f"전방 위험({front:.2f}m) → 더 안전한 방향({('좌' if left > right else '우')})으로 회전"
         
         if left < self.danger_threshold and right < self.danger_threshold:
-            if front > self.safe_threshold:
-                return f"좌우 모두 위험 → 전방 안전({front:.2f}m), 전진"
-            else:
-                return f"좌우 모두 위험, 전방도 불안전 → 후진"
+            return f"좁은 통로 → 전방({front:.2f}m)이 안전하므로 전진"
         
         if left < self.danger_threshold:
             return f"좌측 위험({left:.2f}m) → 우회전"
@@ -311,50 +306,55 @@ r : 리셋    Ctrl+C : 종료
         if front > self.safe_threshold:
             return f"모든 방향 안전 → 직진"
         else:
-            wider_side = "좌측" if left > right else "우측"
-            return f"전방 주의({front:.2f}m) → {wider_side}이 더 넓음"
+            return f"전방 주의({front:.2f}m) → 더 넓은 방향으로 선회"
 
     def decide_auto_movement(self, front, left, right):
-        # 긴급 정지 체크 (너무 가까우면 무조건 정지)
+        # 1. 긴급 정지 (최우선 순위)
+        # 장애물이 너무 가까우면(emergency_threshold) 일단 정지 후 후진합니다.
         if front < self.emergency_threshold or left < self.emergency_threshold or right < self.emergency_threshold:
             if not self.is_in_emergency:
-                # 처음 감지 시
                 self.emergency_stop_time = time.time()
                 self.is_in_emergency = True
-
-            if time.time() - self.emergency_stop_time >= 1.5:
+            if time.time() - self.emergency_stop_time >= 0.5:
                 self.is_in_emergency = False
-                # 가장 안전한 방향 선택
-                return 'B'
-            return 'S'  # 2.5초 동안 정지
+                return 'B'  # 공간 확보를 위해 후진
+            return 'S'  # 1.5초간 정지
 
+        # ========================================================== #
+        # ========== 요청하신 '사방이 벽일 때' 로직 추가 ========== #
+        # ========================================================== #
+        # 2. 수조 코너 등 사방이 막힌 경우 (두 번째 우선 순위)
+        # front, left, right 모두 위험 거리 안쪽이면 '좌회전'을 기본 동작으로 지정합니다.
+        is_surrounded = (front < self.danger_threshold and
+                         left < self.danger_threshold and
+                         right < self.danger_threshold)
+        if is_surrounded:
+            return 'L'  # 무조건 좌회전하여 벽을 따라 이동 시작
+        # ========================================================== #
+
+        # 3. 일반 장애물 회피 로직 (기존 로직 재구성)
         
-        # 위험 상황 체크
+        # 3-1. 전방이 위험할 때 (하지만 사방이 막히진 않았을 때)
         if front < self.danger_threshold:
-            if left > right and left > self.danger_threshold:
-                return 'L'
-            elif right > left and right > self.danger_threshold:
-                return 'R'
-            else:
-                return 'B'  # 후진
-        
-        # 좁은 공간
+            # 좌/우 중 더 넓은 공간으로 회전합니다.
+            return 'L' if left > right else 'R'
+
+        # 3-2. 좌/우만 위험할 때 (좁은 길, 앞은 안전)
         if left < self.danger_threshold and right < self.danger_threshold:
-            if front > self.safe_threshold:
-                return 'F'
-            else:
-                return 'B'
+            # 앞이 뚫려 있으므로 전진합니다.
+            return 'F'
         
-        # 한쪽 벽 회피
+        # 3-3. 한쪽만 위험할 때
         if left < self.danger_threshold:
-            return 'R'
+            return 'R'  # 좌측이 위험하면 우회전
         if right < self.danger_threshold:
-            return 'L'
-            
-        # 안전한 상황
+            return 'L'  # 우측이 위험하면 좌회전
+
+        # 4. 안전한 주행
         if front > self.safe_threshold:
             return 'F'
         else:
+            # 전방이 '주의' 구간일 경우, 더 넓은 쪽으로 선회
             return 'L' if left > right else 'R'
 
     def auto_control_update(self):
@@ -366,17 +366,17 @@ r : 리셋    Ctrl+C : 종료
         prev_right = self.right_speed
         
         if self.auto_command == 'F':      # 전진
-            self.left_speed = 255
-            self.right_speed = -255
+            self.left_speed = 175
+            self.right_speed = -175
         elif self.auto_command == 'B':    # 후진
-            self.left_speed = -255
-            self.right_speed = 255
+            self.left_speed = -175
+            self.right_speed = 175
         elif self.auto_command == 'L':    # 좌회전
-            self.left_speed = -255
-            self.right_speed = -255
+            self.left_speed = 175
+            self.right_speed = 175
         elif self.auto_command == 'R':    # 우회전
-            self.left_speed = 255
-            self.right_speed = 255
+            self.left_speed = -175
+            self.right_speed = -175
         elif self.auto_command == 'S':    # 정지
             self.left_speed = 0
             self.right_speed = 0
@@ -437,11 +437,11 @@ r : 리셋    Ctrl+C : 종료
                         self.left_speed = -175
                         self.right_speed = 175
                     elif key == 'a':
-                        self.left_speed = -175
-                        self.right_speed = -175
-                    elif key == 'd':
                         self.left_speed = 175
                         self.right_speed = 175
+                    elif key == 'd':
+                        self.left_speed = -175
+                        self.right_speed = -175
                     elif key == ' ':
                         self.left_speed = 0
                         self.right_speed = 0
