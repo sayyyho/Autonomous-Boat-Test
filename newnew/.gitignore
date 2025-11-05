@@ -1,0 +1,156 @@
+.DS_Store
+*.DS_Store
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+myenv/
+
+# ===================================
+# YOLO / 머신러닝
+# ===================================
+# 훈련 결과
+runs/
+weights/
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+
+# 데이터셋 (용량 큰 경우)
+datasets/
+data/
+*.zip
+*.tar.gz
+
+# 로그
+*.log
+logs/
+wandb/
+
+# ===================================
+# KABOAT 특화
+# ===================================
+# 촬영/캡처 이미지
+capture_*.jpg
+capture_*.png
+detection_result*.jpg
+detection_result*.png
+screenshot_*.jpg
+
+# HSV 캘리브레이션 결과
+hsv_config_*.txt
+
+# ===================================
+# IDE / 에디터
+# ===================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ===================================
+# OS
+# ===================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ===================================
+# ROS2 (선택사항)
+# ===================================
+install/
+log/
+build/
+
+# ===================================
+# 기타
+# ===================================
+# 임시 파일
+*.tmp
+*.temp
+*.bak
+
+# 백업
+backup/
+
+# 압축 파일
+*.7z
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
+
+# ===================================
+# 프로젝트 특정
+# ===================================
+# 대용량 데이터셋 폴더 (필요시 주석 해제)
+# Red Buoy.v1i.yolov8/
+# Green Buoy.v1i.yolov8/
+
+# 비디오 파일
+*.mp4
+*.avi
+*.mov
+
+# 실험 결과
+experiments/
+results/
+output/
+
+# 개인 메모
+notes.txt
+todo.txt
+memo.md
+
+
+!example.jpg
+!sample.png
+
+# README와 문서는 추적
+!README.md
+!*.md
