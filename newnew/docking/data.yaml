@@ -1,0 +1,14 @@
+train: ./train/images
+test: ./test/images
+nc: 3
+names:
+- blue_circle
+- green_rectangle
+- red_triangle
+roboflow:
+  workspace: boat-qhogg
+  project: docking
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/boat-qhogg/my-first-project-2lnd5/dataset/1
+val: ./train/images

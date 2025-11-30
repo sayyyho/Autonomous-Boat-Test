@@ -92,7 +92,7 @@ def check_dataset_structure(dataset_path: str):
 
 
 def train_buoy_detector(
-    dataset_path: str = './Red Buoy.v1i.yolov8',
+    dataset_path: str = './docking',
     model_size: str = 'n',
     epochs: int = 100,
     img_size: int = 640,
@@ -333,7 +333,7 @@ def main():
     parser = argparse.ArgumentParser(description='KABOAT YOLO 훈련 (GPU 자동 감지)')
     
     # 기본 설정
-    parser.add_argument('--dataset', type=str, default='./Red Buoy.v1i.yolov8',
+    parser.add_argument('--dataset', type=str, default='./docking',
                        help='데이터셋 경로')
     parser.add_argument('--model', type=str, default='n',
                        choices=['n', 's', 'm', 'l', 'x'],

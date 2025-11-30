@@ -36,11 +36,11 @@ def find_latest_model():
 class RealtimeBuoyDetector:
     """실시간 부표 검출기"""
     
-    def __init__(self, model_path=None, conf_threshold=0.3, camera_id=0):
+    def __init__(self, model_path=None, conf_threshold=0.7, camera_id=1):
         """
         Args:
             model_path: YOLO 모델 경로 (None이면 자동 탐색)
-            conf_threshold: 신뢰도 임계값
+            conf_threshold: 신뢰도 임계
             camera_id: 카메라 ID (0=기본 웹캠, 1=외장 카메라)
         """
         # 모델 로드
@@ -272,7 +272,7 @@ def main():
                        help='모델 경로 (기본: 자동 탐색)')
     parser.add_argument('--camera', type=int, default=0,
                        help='카메라 ID (기본: 0)')
-    parser.add_argument('--conf', type=float, default=0.3,
+    parser.add_argument('--conf', type=float, default=0.7,
                        help='신뢰도 임계값 (기본: 0.3)')
     parser.add_argument('--list-cameras', action='store_true',
                        help='사용 가능한 카메라 나열')
